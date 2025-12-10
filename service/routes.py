@@ -8,6 +8,9 @@ from flask import jsonify, request, make_response, abort, url_for   # noqa; F401
 from service.models import Account
 from service.common import status  # HTTP Status Codes
 from . import app  # Import Flask application
+from service.common.error_handlers import bad_request
+
+
 
 
 ############################################################
@@ -69,7 +72,17 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to READ an account ...
-
+@app.route("/accounts/<int:account_id>", methods=["GET"])
+def get_accounts(account_id):
+    """
+    Reads an Account
+    This endpoint will read an Account based the account_id that is requested
+    """
+    app.logger.info("Request to read an Account with id: %s", account_id)
+    account = Account.find(account_id)
+    if not account:
+        abort(status.HTTP_404_NOT_FOUND, f"Account with id [{account_id}] could not be found.")
+    return account.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
@@ -88,15 +101,15 @@ def create_accounts():
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+def check_content_type(expected_type: str):
+    """Verify that the Content-Type header matches the expected type."""
+    content_type = request.headers.get("Content-Type", None)
+
+    if content_type is None:
+        abort(415, description=f"Content-Type must be {expected_type}")
+
+    if content_type != expected_type:
+        abort(415, description=f"Invalid content type: {content_type}, expected {expected_type}")
 
 
-def check_content_type(media_type):
-    """Checks that the media type is correct"""
-    content_type = request.headers.get("Content-Type")
-    if content_type and content_type == media_type:
-        return
-    app.logger.error("Invalid Content-Type: %s", content_type)
-    abort(
-        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        f"Content-Type must be {media_type}",
-    )
+
