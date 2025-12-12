@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounts
+  namespace: sn-labs-burraqemoham
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accounts
+  template:
+    metadata:
+      labels:
+        app: accounts
+    spec:
+      containers:
+      - name: accounts
+        image: image-registry.openshift-image-registry.svc:5000/sn-labs-burraqemoham/accounts:1
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URI
+          value: "postgresql://userEPX:xgtN3s0h03OPfW8I@postgresql:5432/sampledb"
